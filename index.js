@@ -74,7 +74,7 @@ function createPxReplace(viewportSize, minPixelValue, unitPrecision, viewportUni
 function toFixed(number, precision) {
     var multiplier = Math.pow(10, precision + 1),
         wholeNumber = Math.floor(number * multiplier);
-    return Math.round(wholeNumber / 10) * 10 / multiplier;
+    return (Math.round(wholeNumber / 10) * 10 / multiplier).toFixed(precision);
 }
 
 function blacklistedSelector(blacklist, selector) {
