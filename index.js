@@ -13,13 +13,13 @@ var pxRegex = /"[^"]+"|'[^']+'|url\([^\)]+\)|(\d*\.?\d+)px/ig;
 
 var defaults = {
     viewportWidth: 1280,
-    mobMediaParams: {'mediaRule':'only screen and (max-width: 800px)', 'viewportWidth': 320},
     viewportHeight: 568, // not now used; TODO: need for different units and math for different properties
     unitPrecision: 5,
     viewportUnit: 'vw',
     selectorBlackList: [],
     minPixelValue: 1,
-    mediaQuery: false
+    mediaQuery: false,
+    mediaQueryParams: []
 };
 
 module.exports = postcss.plugin('postcss-px-to-viewport', function (options) {
@@ -30,16 +30,20 @@ module.exports = postcss.plugin('postcss-px-to-viewport', function (options) {
     return function (css) {
 
         css.walkAtRules('media', function (rule) {
-            if (rule.params.indexOf(opts.mobMediaParams.mediaRule) !== -1) {
-                var mobPxReplace = createPxReplace(opts.mobMediaParams.viewportWidth, opts.minPixelValue, opts.unitPrecision, opts.viewportUnit);
-                rule.walkDecls(function (decl, i) {
-                    // This should be the fastest test and will remove most declarations
-                    if (decl.value.indexOf('px') === -1) return;
+            for (var i = 0; i<opts.mediaQueryParams.length; i++) {
+                var mediaQueryParam = opts.mediaQueryParams[i];
 
-                    if (blacklistedSelector(opts.selectorBlackList, decl.parent.selector)) return;
+                if (rule.params.indexOf(mediaQueryParam.mediaRule) !== -1) {
+                    var mobPxReplace = createPxReplace(mediaQueryParam.viewportWidth, opts.minPixelValue, opts.unitPrecision, opts.viewportUnit);
+                    rule.walkDecls(function (decl, i) {
+                        // This should be the fastest test and will remove most declarations
+                        if (decl.value.indexOf('px') === -1) return;
 
-                    decl.value = decl.value.replace(pxRegex, mobPxReplace);
-                });
+                        if (blacklistedSelector(opts.selectorBlackList, decl.parent.selector)) return;
+
+                        decl.value = decl.value.replace(pxRegex, mobPxReplace);
+                    });
+                }
             }
         });
 
